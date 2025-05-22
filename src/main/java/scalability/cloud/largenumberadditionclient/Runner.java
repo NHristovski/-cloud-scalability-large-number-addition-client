@@ -40,8 +40,6 @@ public class Runner {
     public void run() {
         startTimer();
 
-        BigInteger finalSum = BigInteger.ZERO;
-
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
         BigInteger currentStart = BigInteger.ZERO;
@@ -52,7 +50,7 @@ public class Runner {
 
         List<Callable<BigInteger>> callables = new ArrayList<>();
 
-        BigInteger end = new BigInteger("350000000000");
+        BigInteger end = new BigInteger("3500000000");
 
         while (currentStart.compareTo(end) < 0) {
             logger.info("Current start is {} is less than {}", currentStart, end);
@@ -66,15 +64,16 @@ public class Runner {
         try {
             List<Future<BigInteger>> futures = executorService.invokeAll(callables);
 
-            futures.forEach(f -> {
-                try {
-                    BigInteger bigInteger = f.get(200, TimeUnit.MINUTES);
-                    finalSum.add(bigInteger);
-                } catch (Exception e) {
-                    logger.error("Failed to get sum");
-                    throw new RuntimeException(e);
-                }
-            });
+            BigInteger finalSum = futures.stream()
+                    .map(f -> {
+                        try {
+                            return f.get(200, TimeUnit.MINUTES);
+                        } catch (Exception e) {
+                            logger.error("Error while retrieving sum", e);
+                            return BigInteger.ZERO;
+                        }
+                    })
+                    .reduce(BigInteger.ZERO, BigInteger::add);
 
             logger.info("Total sum is {}", finalSum);
         } catch (InterruptedException e) {
