@@ -50,7 +50,8 @@ public class Runner {
 
         List<Callable<BigInteger>> callables = new ArrayList<>();
 
-        BigInteger end = new BigInteger("3500000000");
+//        Next 10_000_000_000 numbers were adeed, sum now is 61250000000175000000000 current number is: 350000000000
+        BigInteger end = new BigInteger("350000000000");
 
         while (currentStart.compareTo(end) < 0) {
             logger.info("Current start is {} is less than {}", currentStart, end);
