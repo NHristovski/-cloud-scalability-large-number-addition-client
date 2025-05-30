@@ -12,9 +12,9 @@ import scalability.cloud.largenumberadditionclient.message.SumResponse;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 import static java.lang.Thread.sleep;
@@ -31,6 +31,11 @@ public class Runner {
     private String url;
     @Value("${numThreads}")
     private int numThreads;
+    @Value("${firstNumber}")
+    private String firstNumber;
+    @Value("${lastNumber}")
+    private String lastNumber;
+
 
     public Runner(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -42,7 +47,7 @@ public class Runner {
 
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
-        BigInteger currentStart = BigInteger.ZERO;
+        BigInteger currentStart = new BigInteger(firstNumber);
 //        long limit = 5000000000L;
         long limit = 250000000L;
         String currentUrl = url + String.format("start=%s&limit=%s", currentStart, limit);
@@ -51,7 +56,7 @@ public class Runner {
         List<Callable<BigInteger>> callables = new ArrayList<>();
 
 //        Next 10_000_000_000 numbers were adeed, sum now is 61250000000175000000000 current number is: 350000000000
-        BigInteger end = new BigInteger("350000000000");
+        BigInteger end = new BigInteger(lastNumber);
 
         while (currentStart.compareTo(end) < 0) {
             logger.info("Current start is {} is less than {}", currentStart, end);
@@ -74,6 +79,7 @@ public class Runner {
                             return BigInteger.ZERO;
                         }
                     })
+                    .filter(Objects::nonNull)
                     .reduce(BigInteger.ZERO, BigInteger::add);
 
             logger.info("Total sum is {}", finalSum);
